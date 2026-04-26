@@ -1,38 +1,46 @@
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi();              // Exposes OpenAPI JSON at /openapi/v1.json
+    app.MapScalarApiReference();   // Enables Scalar UI at /scalar
+
+    // Redirect root URL to Scalar in dev
+    app.MapGet("/", () => Results.Redirect("/scalar"));
+}
+else
+{
+    // In production, show a simple message at root
+    app.MapGet("/", () => "API is working fine");
 }
 
+// Common routes
 app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+
+
+app.MapGet("/products", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+   var products = new List<Product>()
+   {
+       new Product("Samsung", 1250),
+       new Product("IPhone", 1356)
+   };
+
+    return Results.Ok(products);
+});
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public record Product(string Name, decimal Price);
