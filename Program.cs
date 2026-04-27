@@ -1,3 +1,4 @@
+
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,20 +28,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-
-
-
-app.MapGet("/products", () =>
-{
-   var products = new List<Product>()
-   {
-       new Product("Samsung", 1250),
-       new Product("IPhone", 1356)
-   };
-
-    return Results.Ok(products);
-});
-
 app.Run();
 
-public record Product(string Name, decimal Price);
